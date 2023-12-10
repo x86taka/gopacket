@@ -8,6 +8,7 @@ package layers
 
 import (
 	"encoding/binary"
+
 	"github.com/google/gopacket"
 )
 
@@ -26,6 +27,15 @@ func (e *EtherIP) DecodeFromBytes(data []byte, df gopacket.DecodeFeedback) error
 	e.Version = data[0] >> 4
 	e.Reserved = binary.BigEndian.Uint16(data[:2]) & 0x0fff
 	e.BaseLayer = BaseLayer{data[:2], data[2:]}
+	return nil
+}
+
+func (e *EtherIP) SerializeTo(b gopacket.SerializeBuffer, opts gopacket.SerializeOptions) error {
+	bytes, err := b.PrependBytes(2)
+	if err != nil {
+		return err
+	}
+	binary.BigEndian.PutUint16(bytes, uint16(e.Version)<<12|e.Reserved)
 	return nil
 }
 
